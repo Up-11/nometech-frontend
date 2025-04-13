@@ -13,7 +13,8 @@ const router = useRouter()
 
     <div class="flex items-center gap-2">
       <UButton
-        v-if="router.currentRoute.value.path !== ROUTES.ADMIN.INDEX"
+        v-if="!router.currentRoute.value.path.includes(ROUTES.ADMIN.INDEX)"
+        class="text-orange-500"
         color="neutral"
         :to="ROUTES.ADMIN.INDEX"
         variant="link"

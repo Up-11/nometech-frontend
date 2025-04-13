@@ -38,7 +38,7 @@ onMounted(() => {
               <h1 class="text-3xl font-bold">Интернет провайдер Нометек</h1>
               <h2 class="text-xl">Подключить интернет последнего поколения</h2>
               <a href="#rates">
-                <UButton label="Подключить" class="self-start text-2xl rounded-lg" />
+                <UButton label="Подключить" class="self-start rounded-lg" />
               </a>
             </div>
           </div>

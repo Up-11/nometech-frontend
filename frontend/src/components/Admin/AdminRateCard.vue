@@ -15,14 +15,14 @@ defineProps<{ item: IRate }>()
       </p>
       <div class="flex items-center gap-1">
         <RateSettingsModal :item="item">
-          <UButton color="neutral" icon="lucide:settings" />
+          <UButton size="xs" color="neutral" icon="lucide:settings" />
         </RateSettingsModal>
         <ApproveModal
           title="Удалить тариф"
           description="Это не повлияет на уже отправленные заявки"
           :buttons-text="['Отмена', 'Удалить']"
         >
-          <UButton color="error" icon="lucide:trash" />
+          <UButton size="xs" color="error" icon="lucide:trash" />
         </ApproveModal>
       </div>
     </div>

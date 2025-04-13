@@ -15,8 +15,8 @@ defineProps<{ item: IRate }>()
     <slot />
 
     <template #body>
-      <div class="grid h-full grid-cols-[40%_60%]">
-        <div class="flex flex-col h-full gap-4 border-r border-r-neutral-200">
+      <div class="grid grid-cols-1 sm:grid-cols-[40%_60%] h-full">
+        <div class="flex flex-col h-full gap-4 sm:border-r sm:border-r-neutral-200">
           <h2 class="text-2xl font-extrabold">{{ item.title }}</h2>
           <p class="text-xl">В тариф включены:</p>
           <RateIncludes :includes="item.includes" />

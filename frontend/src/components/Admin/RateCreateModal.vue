@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import type { IRate } from '@/types'
-
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const schema = z.object({
   title: z.string().nonempty('Название должно быть заполнено'),
@@ -33,7 +31,6 @@ const schema = z.object({
   }),
 })
 
-const props = defineProps<{ item: IRate }>()
 const items = ref([
   {
     label: 'Backlog',
@@ -52,28 +49,27 @@ const items = ref([
     value: 'done',
   },
 ])
+const props = defineProps<{ type?: string }>()
 
-const mobileIncludes = ref<boolean>(
-  !!props.item.includes.mobile?.amountGb ||
-    !!props.item.includes.mobile?.sms ||
-    !!props.item.includes.mobile?.minutes,
-)
+const defaultType = computed(() => items.value[0]?.value || 'backlog')
+
+const type = ref(props.type || defaultType.value)
+
+const mobileIncludes = ref<boolean>(false)
 
 type Schema = z.output<typeof schema>
 
 const state = ref<Partial<Schema>>({
-  title: props.item.title,
-  price: props.item.price,
-  typeId: props.item.type.id,
+  title: 'Новый тариф',
+  price: 1,
+  typeId: type.value,
   includes: {
-    speedInMbs: props.item.includes.speedInMbs,
-    mobile: props.item.includes.mobile
-      ? {
-          amountGb: props.item.includes.mobile.amountGb ?? 1,
-          sms: props.item.includes.mobile.sms ?? 1,
-          minutes: props.item.includes.mobile.minutes ?? 1,
-        }
-      : undefined,
+    speedInMbs: 1,
+    mobile: {
+      amountGb: 1,
+      sms: 1,
+      minutes: 1,
+    },
   },
 })
 
@@ -82,23 +78,25 @@ watch(
   (newValue) => {
     state.value.includes!.mobile = newValue
       ? {
-          amountGb: props.item.includes.mobile?.amountGb ?? 1,
-          sms: props.item.includes.mobile?.sms ?? 1,
-          minutes: props.item?.includes?.mobile?.minutes ?? 1,
+          amountGb: state.value?.includes?.mobile?.amountGb ?? 1,
+          sms: state.value?.includes?.mobile?.sms ?? 1,
+          minutes: state.value?.includes?.mobile?.minutes ?? 1,
         }
       : undefined
   },
   { deep: true },
 )
+
 const toast = useToast()
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   console.log(event.data)
+
   toast.add({ title: 'Success', description: 'The form has been submitted.', color: 'success' })
 }
 </script>
 
 <template>
-  <UModal :title="`Настройки тарифа '${item.title}'`">
+  <UModal title="Создание нового тарифа">
     <slot />
     <template #body>
       <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
