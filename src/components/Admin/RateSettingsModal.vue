@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import type { IRate } from '@/types'
+import type { IRate } from '@/lib/types'
 
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
-import { ref, watch } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
+import { typesKey } from '@/lib/keys'
+import { useMutation } from '@/composables/useMutation'
+import { rateService, type UpdateRateDto } from '@/api/rate.service'
 
 const schema = z.object({
   title: z.string().nonempty('Название должно быть заполнено'),
@@ -34,24 +37,14 @@ const schema = z.object({
 })
 
 const props = defineProps<{ item: IRate }>()
-const items = ref([
-  {
-    label: 'Backlog',
-    value: 'backlog',
-  },
-  {
-    label: 'Todo',
-    value: 'todo',
-  },
-  {
-    label: 'In Progress',
-    value: 'in_progress',
-  },
-  {
-    label: 'Done',
-    value: 'done',
-  },
-])
+
+const types = inject(typesKey)
+const items = computed(() =>
+  types?.value.map((type) => ({
+    label: type.title,
+    value: type.id,
+  })),
+)
 
 const mobileIncludes = ref<boolean>(
   !!props.item.includes.mobile?.amountGb ||
@@ -64,7 +57,7 @@ type Schema = z.output<typeof schema>
 const state = ref<Partial<Schema>>({
   title: props.item.title,
   price: props.item.price,
-  typeId: props.item.type.id,
+  typeId: props.item.typeId,
   includes: {
     speedInMbs: props.item.includes.speedInMbs,
     mobile: props.item.includes.mobile
@@ -90,15 +83,43 @@ watch(
   },
   { deep: true },
 )
+
+const isOpen = ref(false)
+const emit = defineEmits<{
+  refresh: []
+}>()
+
+const { mutate } = useMutation({
+  mutationFn: (dto: UpdateRateDto) => rateService.updateRate(props.item.id, dto),
+  onSuccess: () => {
+    toast.add({ title: 'Успех', description: 'Тариф был обновлен.', color: 'success' })
+    emit('refresh')
+    isOpen.value = false
+  },
+  onError: (err) => {
+    toast.add({ title: 'Error', description: err.message, color: 'error' })
+  },
+})
+
+const { mutate: deleteRate } = useMutation({
+  mutationFn: (id: string) => rateService.deleteRate(id),
+  onSuccess: () => {
+    toast.add({ title: 'Успех', description: 'Тариф был удален.', color: 'success' })
+    emit('refresh')
+    isOpen.value = false
+  },
+  onError: (err) => {
+    toast.add({ title: 'Error', description: err.message, color: 'error' })
+  },
+})
 const toast = useToast()
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  console.log(event.data)
-  toast.add({ title: 'Success', description: 'The form has been submitted.', color: 'success' })
+  mutate(event.data)
 }
 </script>
 
 <template>
-  <UModal :title="`Настройки тарифа '${item.title}'`">
+  <UModal v-model:open="isOpen" :title="`Настройки тарифа '${item.title}'`">
     <slot />
     <template #body>
       <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
@@ -132,9 +153,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </UFormField>
         </div>
         <div class="flex w-full justify-between">
-          <UTooltip text="Нельзя удалить категорию в которой есть тарифы">
-            <UButton type="submit" color="error"> Удалить </UButton>
-          </UTooltip>
+          <UButton color="error" @click="deleteRate(item.id)"> Удалить </UButton>
 
           <UButton type="submit"> Сохранить </UButton>
         </div>

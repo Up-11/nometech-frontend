@@ -18,6 +18,7 @@ declare module 'vue' {
     ApplicationModal: typeof import('./src/components/Application/ApplicationModal.vue')['default']
     ApplicationNotice: typeof import('./src/components/Application/ApplicationNotice.vue')['default']
     ApproveModal: typeof import('./src/components/App/ApproveModal.vue')['default']
+    CreateRateTypeModal: typeof import('./src/components/Admin/CreateRateTypeModal.vue')['default']
     LoginForm: typeof import('./src/components/Admin/LoginForm.vue')['default']
     RateCreateModal: typeof import('./src/components/Admin/RateCreateModal.vue')['default']
     RateCreateModel: typeof import('./src/components/Admin/RateCreateModal.vue')['default']
@@ -45,6 +46,7 @@ declare module 'vue' {
     ULinkBase: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/LinkBase.vue')['default']
     UModal: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Modal.vue')['default']
     USelect: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Select.vue')['default']
+    USkeleton: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Skeleton.vue')['default']
     UTable: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Table.vue')['default']
     UTooltip: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Tooltip.vue')['default']
   }

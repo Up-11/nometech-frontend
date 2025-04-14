@@ -1,24 +1,52 @@
 <script setup lang="ts">
+import { rateService } from '@/api/rate.service'
 import AppHeader from '@/components/App/AppHeader.vue'
 import TabButton from '@/components/App/TabButton.vue'
 import RateItem from '@/components/Rate/RateItem.vue'
-import { rates, rateTypes } from '@/data'
-import type { IRateType } from '@/types'
-import { computed, onMounted, ref } from 'vue'
+import { useQuery } from '@/composables/useQuery'
+import type { IRate, IRateType } from '@/lib/types'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-
 const router = useRouter()
 
-const pickedType = ref<IRateType>(rateTypes[0])
-const currentRates = computed(() => {
-  // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-  router.push({ query: { type: pickedType.value.id } })
-  return rates.filter((rate) => rate.type.id === pickedType.value.id)
+const rates = ref<IRate[]>([])
+const rateTypes = ref<IRateType[]>([])
+const pickedType = ref<IRateType | null>(null)
+
+useQuery({
+  queryFn: () => rateService.getRatesAndTypes(),
+  onSuccess: (data) => {
+    rates.value = data.data.rates
+    rateTypes.value = data.data.filteredTypes
+  },
+  enabled: true,
 })
 
+watch(
+  () => rateTypes.value,
+  (newRateTypes) => {
+    if (newRateTypes && newRateTypes.length > 0) {
+      pickedType.value = newRateTypes[0]
+    }
+  },
+  { immediate: true },
+)
+
 onMounted(() => {
-  pickedType.value =
-    rateTypes.find((type) => type.id === router.currentRoute.value.query.type) || rateTypes[0]
+  const queryType = router.currentRoute.value.query.type as string
+  if (queryType && rateTypes.value.length > 0) {
+    const foundType = rateTypes.value.find((type) => type.id === queryType)
+    if (foundType) {
+      pickedType.value = foundType
+    }
+  }
+})
+
+const currentRates = computed(() => {
+  if (!pickedType.value) return []
+  // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+  router.push({ query: { type: pickedType.value.id } })
+  return rates.value.filter((rate) => rate.typeId === pickedType!.value!.id)
 })
 </script>
 
@@ -29,11 +57,7 @@ onMounted(() => {
       <section>
         <div class="m-4 bg-white p-4 rounded-2xl">
           <div class="flex flex-col md:flex-row-reverse gap-8 items-center">
-            <img
-              src="/public/347050613332122.jpeg"
-              class="rounded-xl w-full md:w-1/2"
-              alt="Нометек"
-            />
+            <img src="/347050613332122.jpeg" class="rounded-xl w-full md:w-1/2" alt="Нометек" />
             <div class="flex flex-col gap-8 md:w-1/2">
               <h1 class="text-3xl font-bold">Интернет провайдер Нометек</h1>
               <h2 class="text-xl">Подключить интернет последнего поколения</h2>
@@ -88,7 +112,7 @@ onMounted(() => {
             v-for="type in rateTypes"
             :key="type.id"
             :text="type.title"
-            :is-active="type.id === pickedType.id"
+            :is-active="type.id === pickedType?.id"
             @click="() => (pickedType = type)"
           />
         </div>

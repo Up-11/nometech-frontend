@@ -1,8 +1,28 @@
 <script setup lang="ts">
-import { rates } from '@/data'
+import { rateService } from '@/api/rate.service'
+import { useQuery } from '@/composables/useQuery'
+import { typesKey } from '@/lib/keys'
+import type { IRateType } from '@/lib/types'
+import { provide, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
+
+const { data: rates, fetch } = useQuery({
+  queryFn: () => rateService.getAllRates(),
+  enabled: true,
+})
+
+const types = ref<IRateType[]>([])
+
+const {} = useQuery({
+  queryFn: () => rateService.getAllTypes(),
+  onSuccess: (data) => {
+    types.value = data.data
+  },
+  enabled: true,
+})
+provide(typesKey, types)
 </script>
 
 <template>
@@ -18,9 +38,14 @@ const route = useRoute()
             v-if="route.params.id === undefined"
             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"
           >
-            <AdminRateCard v-for="item in rates" :key="item.id" :item="item" />
+            <AdminRateCard
+              @refresh="fetch"
+              v-for="item in rates?.data"
+              :key="item.id"
+              :item="item"
+            />
             <div class="flex justify-center items-center">
-              <RateCreateModal>
+              <RateCreateModal @refresh="fetch">
                 <div
                   class="flex size-15 rounded-full bg-orange-200 cursor-pointer hover:bg-orange-400 transition-colors p-4"
                 >

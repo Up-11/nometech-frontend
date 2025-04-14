@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
-import { computed, ref, watch } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
+import { typesKey } from '@/lib/keys'
+import { useMutation } from '@/composables/useMutation'
+import { rateService, type CreateRateDto } from '@/api/rate.service'
 
 const schema = z.object({
   title: z.string().nonempty('Название должно быть заполнено'),
@@ -31,25 +34,15 @@ const schema = z.object({
   }),
 })
 
-const items = ref([
-  {
-    label: 'Backlog',
-    value: 'backlog',
-  },
-  {
-    label: 'Todo',
-    value: 'todo',
-  },
-  {
-    label: 'In Progress',
-    value: 'in_progress',
-  },
-  {
-    label: 'Done',
-    value: 'done',
-  },
-])
+const types = inject(typesKey)
+
+const items = computed(
+  () => types?.value?.map((curr) => ({ value: curr.id, label: curr.title })) || [],
+)
+
 const props = defineProps<{ type?: string }>()
+const emit = defineEmits<{ refresh: [] }>()
+const isOpen = ref(false)
 
 const defaultType = computed(() => items.value[0]?.value || 'backlog')
 
@@ -87,16 +80,26 @@ watch(
   { deep: true },
 )
 
+const { mutate } = useMutation({
+  mutationFn: (dto: CreateRateDto) => rateService.createRate(dto),
+  onSuccess: () => {
+    toast.add({ title: 'Успех', description: 'Тариф успешно создан.', color: 'success' })
+    emit('refresh')
+    isOpen.value = false
+  },
+  onError: (err) => {
+    toast.add({ title: 'Error', description: err.message, color: 'error' })
+  },
+})
+
 const toast = useToast()
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  console.log(event.data)
-
-  toast.add({ title: 'Success', description: 'The form has been submitted.', color: 'success' })
+  mutate(event.data)
 }
 </script>
 
 <template>
-  <UModal title="Создание нового тарифа">
+  <UModal v-model:open="isOpen" title="Создание нового тарифа">
     <slot />
     <template #body>
       <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
@@ -129,11 +132,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             <UInputNumber :min="1" v-model="state.includes!.mobile!.minutes" class="w-full" />
           </UFormField>
         </div>
-        <div class="flex w-full justify-between">
-          <UTooltip text="Нельзя удалить категорию в которой есть тарифы">
-            <UButton type="submit" color="error"> Удалить </UButton>
-          </UTooltip>
-
+        <div class="flex w-full justify-end">
           <UButton type="submit"> Сохранить </UButton>
         </div>
       </UForm>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RateIncludes } from '@/types'
+import type { RateIncludes } from '@/lib/types'
 
 defineProps<{ includes: RateIncludes }>()
 </script>

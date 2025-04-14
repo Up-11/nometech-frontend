@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { IApplication } from '@/types'
+import type { IApplication } from '@/lib/types'
 
 defineProps<{ application: IApplication }>()
 </script>

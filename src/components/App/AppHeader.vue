@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import { authKey } from '@/lib/keys'
 import { ROUTES } from '@/router/config'
+import { inject } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+
+const auth = inject(authKey)
 </script>
 
 <template>
@@ -11,7 +15,7 @@ const router = useRouter()
   >
     <h2 class="text-3xl font-semibold">Нометек</h2>
 
-    <div class="flex items-center gap-2">
+    <div v-if="auth?.isLoggedIn.value" class="flex items-center gap-2">
       <UButton
         v-if="!router.currentRoute.value.path.includes(ROUTES.ADMIN.INDEX)"
         class="text-orange-500"
@@ -27,6 +31,16 @@ const router = useRouter()
         variant="link"
         >Перейти на сайт</UButton
       >
+      <ApproveModal
+        @approve="
+          () =>
+            auth!.logout(() => {
+              router.push(ROUTES.INDEX)
+            })
+        "
+      >
+        <UButton color="neutral" variant="link">Выйти из аккаунта</UButton>
+      </ApproveModal>
     </div>
   </header>
 </template>

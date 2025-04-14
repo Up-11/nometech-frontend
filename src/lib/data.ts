@@ -1,4 +1,9 @@
-import type { IRate, IRateType } from './types'
+import type { IRate, IRateType, IUser } from './types'
+
+export const initialUser: IUser = {
+  id: null,
+  email: null,
+}
 
 export const rateTypes: IRateType[] = [
   {

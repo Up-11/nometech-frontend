@@ -1,7 +1,28 @@
 <script setup lang="ts">
-import type { IRate } from '@/types'
+import { rateService } from '@/api/rate.service'
+import { useMutation } from '@/composables/useMutation'
+import type { IRate } from '@/lib/types'
 
 defineProps<{ item: IRate }>()
+const emit = defineEmits<{ refresh: [] }>()
+const toast = useToast()
+
+const { mutate } = useMutation({
+  mutationFn: (id: string) => rateService.deleteRate(id),
+  onSuccess: () => {
+    toast.add({
+      title: 'Успешно',
+      description: 'Тариф успешно удален',
+    })
+    emit('refresh')
+  },
+  onError: () => {
+    toast.add({
+      title: 'Ошибка',
+      description: 'Не удалось удалить тариф',
+    })
+  },
+})
 </script>
 
 <template>
@@ -14,13 +35,14 @@ defineProps<{ item: IRate }>()
         {{ item.price }} <span class="text-sm font-medium">₽/мес</span>
       </p>
       <div class="flex items-center gap-1">
-        <RateSettingsModal :item="item">
+        <RateSettingsModal @refresh="$emit('refresh')" :item="item">
           <UButton size="xs" color="neutral" icon="lucide:settings" />
         </RateSettingsModal>
         <ApproveModal
           title="Удалить тариф"
           description="Это не повлияет на уже отправленные заявки"
           :buttons-text="['Отмена', 'Удалить']"
+          v-on:approve="() => mutate(item.id)"
         >
           <UButton size="xs" color="error" icon="lucide:trash" />
         </ApproveModal>

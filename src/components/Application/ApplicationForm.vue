@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import type { IRate } from '@/types'
+import type { IRate } from '@/lib/types'
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import { reactive } from 'vue'
+import { useMutation } from '@/composables/useMutation'
+import { applicationService } from '@/api/application.service'
 
-defineProps<{ item: IRate }>()
+const props = defineProps<{ item: IRate }>()
 const schema = z.object({
   address: z.string().nonempty({
     message: 'Адрес не может быть пустым',
@@ -12,14 +14,9 @@ const schema = z.object({
   name: z.string().nonempty({
     message: 'Имя не может быть пустым',
   }),
-  phone: z
-    .string()
-    .nonempty({
-      message: 'Телефон не может быть пустым',
-    })
-    .regex(/^\d{11}$/, {
-      message: 'Неверный формат номера телефона',
-    }),
+  phone: z.string().nonempty({
+    message: 'Телефон не может быть пустым',
+  }),
 })
 
 type Schema = z.output<typeof schema>
@@ -31,9 +28,23 @@ const state = reactive<Partial<Schema>>({
 })
 
 const toast = useToast()
+
+const { mutate } = useMutation({
+  mutationFn: (dto: Schema) =>
+    applicationService.createApplication({ ...dto, rateId: props.item.id }),
+  onSuccess: () => {
+    toast.add({
+      title: 'Успех',
+      description: 'Ваша заявка была успешно отправлена.',
+      color: 'success',
+    })
+  },
+  onError: (error) => {
+    toast.add({ title: 'Error', description: error.message, color: 'error' })
+  },
+})
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  toast.add({ title: 'Success', description: 'The form has been submitted.', color: 'success' })
-  console.log(event.data)
+  mutate(event.data)
 }
 </script>
 

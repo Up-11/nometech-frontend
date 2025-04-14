@@ -12,6 +12,10 @@ const {
 }>()
 const emit = defineEmits<{ (event: 'approve'): void }>()
 const open = ref(false)
+const onClose = () => {
+  emit('approve')
+  open.value = false
+}
 </script>
 
 <template>
@@ -25,7 +29,7 @@ const open = ref(false)
 
     <template #footer>
       <UButton :label="buttonsText[0]" color="neutral" variant="outline" @click="open = false" />
-      <UButton :label="buttonsText[1]" color="error" @click="emit('approve')" />
+      <UButton :label="buttonsText[1]" color="error" @click="onClose" />
     </template>
   </UModal>
 </template>

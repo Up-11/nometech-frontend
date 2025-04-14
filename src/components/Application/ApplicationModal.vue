@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { IRate } from '@/types'
+import type { IRate } from '@/lib/types'
 import RateIncludes from '../Rate/RateIncludes.vue'
 
 defineProps<{ item: IRate }>()

@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+import AuthProvider from './providers/AuthProvider.vue'
 </script>
 
 <template>
-  <UApp
-    :tooltip="{
-      delayDuration: 150,
-    }"
-  >
-    <div class="fixed inset-0 bg-gray-50 -z-10" />
-    <RouterView />
-  </UApp>
+  <AuthProvider>
+    <UApp
+      :tooltip="{
+        delayDuration: 150,
+      }"
+    >
+      <div class="fixed inset-0 bg-gray-50 -z-10" />
+
+      <RouterView />
+    </UApp>
+  </AuthProvider>
 </template>
 <style>
 @keyframes gradient {

@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
-import { computed, reactive } from 'vue'
+import { computed, inject, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { authKey } from '@/lib/keys'
+import { useMutation } from '@/composables/useMutation'
+import { AuthService } from '@/api/auth/auth.service'
+import { ROUTES } from '@/router/config'
 
 const schema = z.object({
   email: z.string().email('Некорректный email'),
@@ -16,16 +20,40 @@ const state = reactive<Partial<Schema>>({
   password: '',
 })
 
+const toast = useToast()
 const router = useRouter()
+const auth = inject(authKey)
 
+const { mutate: login, isLoading } = useMutation({
+  mutationFn: (data: Schema) => {
+    return AuthService.login(data.email, data.password)
+  },
+  onSuccess: (data) => {
+    toast.add({
+      title: 'Успех',
+      description: 'Вы успешно авторизовались',
+      color: 'success',
+    })
+    auth!.setAuthData(data.user, data.accessToken)
+    router.replace(ROUTES.ADMIN.INDEX)
+  },
+  onError: (err) => {
+    toast.add({
+      title: 'Ошибка',
+      description: err.message,
+      color: 'error',
+    })
+  },
+})
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-  console.log(event.data)
+  login(event.data)
 }
 
 const canSendData = computed(() => {
   return state.email && state.password
 })
 </script>
+
 <template>
   <UForm
     :schema="schema"
@@ -54,6 +82,8 @@ const canSendData = computed(() => {
       />
     </UFormField>
 
-    <UButton :disabled="!canSendData" size="xl" class="self-end" type="submit"> Войти </UButton>
+    <UButton :disabled="!canSendData" :loading="isLoading" size="xl" class="self-end" type="submit">
+      Войти
+    </UButton>
   </UForm>
 </template>

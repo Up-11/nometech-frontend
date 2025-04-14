@@ -1,57 +1,41 @@
 <script setup lang="ts">
-import { h, ref, resolveComponent } from 'vue'
+import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { Row } from '@tanstack/vue-table'
-import type { IApplicationTable } from '@/types'
+import type { IApplicationTable } from '@/lib/types'
 import AdminNavPanel from '@/components/Admin/AdminNavPanel.vue'
+import { useQuery } from '@/composables/useQuery'
+import { applicationService } from '@/api/application.service'
+import { useMutation } from '@/composables/useMutation'
 
 const UButton = resolveComponent('UButton')
 const UDropdownMenu = resolveComponent('UDropdownMenu')
 
 const toast = useToast()
 
-const data = ref<IApplicationTable[]>([
-  {
-    id: '1',
-    rate: {
-      id: 'rate-1',
-      title: 'Базовый интернет',
-      description: 'Базовый тариф для дома с умеренным использованием',
-      price: 499,
-      type: {
-        id: 'type-1',
-        title: 'Internet',
-        description: 'Тарифы для домашнего интернета',
-      },
-    },
-    userData: {
-      name: 'Иван Иванов',
-      address: 'Москва, ул. Ленинская, д. 1',
-      phone: '89231234567',
-    },
-    createdAt: '2024-03-11T15:30:00',
+const { data, isLoading, fetch } = useQuery({
+  queryFn: () => applicationService.getApplications(),
+  enabled: true,
+})
+
+const { mutate } = useMutation({
+  mutationFn: (id: string) => applicationService.deleteApplication(id),
+  onSuccess: () => {
+    toast.add({
+      title: 'ID заявки скопирована в буфер обмена',
+      color: 'success',
+      icon: 'i-lucide-circle-check',
+    })
+    fetch()
   },
-  {
-    id: '2',
-    rate: {
-      id: 'rate-2',
-      title: 'Семейный интернет',
-      description: 'Тариф для большой семьи с высоким использованием',
-      price: 899,
-      type: {
-        id: 'type-1',
-        title: 'Internet',
-        description: 'Тарифы для домашнего интернета',
-      },
-    },
-    userData: {
-      name: 'Петр Петров',
-      address: 'Санкт-Петербург, ул. Невская, д. 2',
-      phone: '89231234568',
-    },
-    createdAt: '2024-03-11T10:10:00',
+  onError: (error) => {
+    toast.add({
+      title: 'Ошибка',
+      description: error.message,
+    })
   },
-])
+})
+
 const columns: TableColumn<IApplicationTable>[] = [
   {
     accessorKey: 'id',
@@ -77,15 +61,15 @@ const columns: TableColumn<IApplicationTable>[] = [
   },
 
   {
-    accessorKey: 'userData.name',
+    accessorKey: 'name',
     header: 'Имя',
   },
   {
-    accessorKey: 'userData.address',
+    accessorKey: 'address',
     header: 'Адрес',
   },
   {
-    accessorKey: 'userData.phone',
+    accessorKey: 'phone',
     header: 'Телефон',
   },
   {
@@ -131,12 +115,6 @@ function getRowItems(row: Row<IApplicationTable>) {
       label: 'Скопировать ID заявки',
       onSelect() {
         navigator.clipboard.writeText(row.original.id)
-
-        toast.add({
-          title: 'ID заявки скопирована в буфер обмена',
-          color: 'success',
-          icon: 'i-lucide-circle-check',
-        })
       },
     },
     {
@@ -144,8 +122,9 @@ function getRowItems(row: Row<IApplicationTable>) {
     },
     {
       label: 'Удалить заявку',
-      onSelect() {
-        data.value = data.value.filter((item) => item.id !== row.original.id)
+      async onSelect() {
+        const curr = data.value?.data.find((item) => item.id === row.original.id)
+        await mutate(curr!.id)
 
         toast.add({
           title: 'Заявка удалена',
@@ -165,7 +144,9 @@ function getRowItems(row: Row<IApplicationTable>) {
       <section class="mt-4">
         <h2 class="text-2xl font-bold">Отправленные заявки</h2>
         <div>
-          <UTable :data="data" :columns="columns" class="flex-1" />
+          <UTable :data="data?.data" :loading="isLoading" :columns="columns" class="flex-1">
+            <template #empty> <h1>Нет данных</h1></template>
+          </UTable>
         </div>
       </section>
     </section>

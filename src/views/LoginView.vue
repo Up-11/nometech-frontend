@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import LoginForm from '@/components/Admin/LoginForm.vue'
+import { ROUTES } from '@/router/config'
 </script>
 
 <template>
@@ -8,6 +9,9 @@ import LoginForm from '@/components/Admin/LoginForm.vue'
       <h2 class="text-3xl font-semibold">Нометек</h2>
       <h1 class="text-2xl font-semibold">Вход в админ панель</h1>
       <LoginForm />
+      <RouterLink :to="ROUTES.INDEX" class="font-semibold cursor-pointer"
+        >Вернуться на главную</RouterLink
+      >
     </div>
   </section>
 </template>

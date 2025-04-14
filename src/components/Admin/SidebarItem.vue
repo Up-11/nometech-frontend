@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ROUTES } from '@/router/config'
-import type { IRateType } from '@/types'
+import type { IRateType } from '@/lib/types'
 
 defineProps<{ isActive?: boolean; type: IRateType }>()
+
+defineEmits<{ refresh: [] }>()
 </script>
 
 <template>
@@ -14,7 +16,7 @@ defineProps<{ isActive?: boolean; type: IRateType }>()
       :class="[!isActive && 'text-black']"
       >{{ type.title }}
     </UButton>
-    <RateTypeModal :item="type">
+    <RateTypeModal :item="type" @refresh="$emit('refresh')">
       <UButton variant="ghost" :class="[!isActive && 'text-black']" trailing-icon="lucide:menu" />
     </RateTypeModal>
   </div>
