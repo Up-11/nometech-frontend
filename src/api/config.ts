@@ -1,5 +1,5 @@
 export const API = {
-  BASE_URL: 'http://localhost:4200',
+  BASE_URL: 'nometech-backend-0hvyin-87d2dd-195-133-194-39.traefik.me',
   AUTH: {
     LOGIN: 'authorization/sign-in',
   },
