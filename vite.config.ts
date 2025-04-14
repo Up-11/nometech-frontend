@@ -31,4 +31,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  preview: {
+    allowedHosts: ['nometech-frontend-bilwpw-7c8e07-195-133-194-39.traefik.me'],
+  },
 })
