@@ -133,7 +133,9 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
           </UFormField>
         </div>
         <div class="flex w-full justify-end">
-          <UButton type="submit"> Сохранить </UButton>
+          <UButton :disables="state.typeId === '' || state.typeId === null" type="submit">
+            Сохранить
+          </UButton>
         </div>
       </UForm>
     </template>
