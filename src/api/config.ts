@@ -1,5 +1,5 @@
 export const API = {
-  BASE_URL: 'nometech-backend-8qyqkj-30910f-185-177-219-168.traefik.me',
+  BASE_URL: 'http://nometech-backend-8qyqkj-30910f-185-177-219-168.traefik.me',
   AUTH: {
     LOGIN: 'authorization/sign-in',
   },
