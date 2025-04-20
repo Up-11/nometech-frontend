@@ -32,6 +32,6 @@ export default defineConfig({
     },
   },
   preview: {
-    allowedHosts: ['nometech-frontend-bilwpw-7c8e07-195-133-194-39.traefik.me'],
+    allowedHosts: ['nometech-frontend-ps45ou-b4a51f-185-177-219-168.traefik.me'],
   },
 })
